@@ -1,0 +1,10 @@
+[project]
+name = "api-extracao-notas-fiscais"
+version = "0.1.0"
+description = "API serverless que extrai e categoriza dados de notas fiscais a partir de imagens."
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
