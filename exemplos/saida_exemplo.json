@@ -1,0 +1,37 @@
+{
+  "cnpj": "11.222.333/0001-81",
+  "cnpj_valido": true,
+  "chave_acesso": "35261011222333000181650010000001231000001234",
+  "data_emissao": "2026-10-28",
+  "valor_total": 58.67,
+  "itens": [
+    {
+      "descricao": "LEITE INTEGRAL 1L",
+      "quantidade": 2.0,
+      "valor_unitario": 4.5,
+      "valor_total": 9.0,
+      "categoria": "alimentos"
+    },
+    {
+      "descricao": "ARROZ BRANCO 5KG",
+      "quantidade": 1.0,
+      "valor_unitario": 28.9,
+      "valor_total": 28.9,
+      "categoria": "alimentos"
+    },
+    {
+      "descricao": "DETERGENTE NEUTRO 500ML",
+      "quantidade": 3.0,
+      "valor_unitario": 2.79,
+      "valor_total": 8.37,
+      "categoria": "limpeza"
+    },
+    {
+      "descricao": "SABAO EM PO 1KG",
+      "quantidade": 1.0,
+      "valor_unitario": 12.4,
+      "valor_total": 12.4,
+      "categoria": "limpeza"
+    }
+  ]
+}
