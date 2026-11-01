@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: API serverless que extrai e categoriza dados de notas fiscais a partir de imagens.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+  # Bucket privado onde as imagens das notas são enviadas.
+  BucketNotas:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: expirar-imagens-antigas
+            Status: Enabled
+            ExpirationInDays: 30
+
+  GrupoDeLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-extrator"
+      RetentionInDays: 14
+
+  # API com chave obrigatória e limite de requisições.
+  ApiNotas:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Auth:
+        ApiKeyRequired: true
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          Throttle:
+            RateLimit: 5
+            BurstLimit: 10
+
+  FuncaoExtrator:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-extrator"
+      CodeUri: src/
+      Handler: nf_extractor.handler.lambda_handler
+      LoggingConfig:
+        LogGroup: !Ref GrupoDeLogs
+      Environment:
+        Variables:
+          BUCKET_NOTAS: !Ref BucketNotas
+          PREFIXO_NOTAS: notas/
+      Policies:
+        # Leitura limitada ao prefixo permitido, e só o Textract necessário.
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub "${BucketNotas.Arn}/notas/*"
+            - Effect: Allow
+              Action: textract:DetectDocumentText
+              Resource: "*"
+      Events:
+        ExtrairNota:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiNotas
+            Path: /notas
+            Method: post
+
+Outputs:
+  UrlDaApi:
+    Description: URL do endpoint POST /notas
+    Value: !Sub "https://${ApiNotas}.execute-api.${AWS::Region}.amazonaws.com/prod/notas"
+  NomeDoBucket:
+    Description: Bucket para enviar as imagens (use a pasta notas/)
+    Value: !Ref BucketNotas
